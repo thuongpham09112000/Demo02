@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/your/repository.git' // Thay thế đường dẫn với URL của kho lưu trữ GitHub của bạn
+            }
+        }
+        
+        stage('Terraform Apply') {
+            steps {
+                script {
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+        
+        stage('Ansible Playbook') {
+            steps {
+                script {
+                    sh 'ansible-playbook playbook.yml'
+                }
+            }
+        }
+        
+        stage('Deployment Report') {
+            steps {
+                echo 'Deployment completed successfully!'
+            }
+        }
+    }
+}

@@ -1,19 +1,48 @@
 ---
-- hosts: all
-  become: true
+- name: Install Terraform and Node.js
+  hosts: localhost
+  become: yes
   tasks:
-    - name: Update system packages
-      yum:
-        name: '*'
-        state: latest
+    - name: Download Terraform 1.8.2
+      get_url:
+        url: "https://releases.hashicorp.com/terraform/1.8.2/terraform_1.8.2_linux_amd64.zip"
+        dest: "/tmp/terraform_1.8.2_linux_amd64.zip"
 
-    - name: Install Apache web server
-      yum:
-        name: httpd
-        state: present
+    - name: Extract Terraform
+      unarchive:
+        src: "/tmp/terraform_1.8.2_linux_amd64.zip"
+        dest: "/usr/local/bin"
+        remote_src: yes
+        creates: "/usr/local/bin/terraform"
 
-    - name: Start Apache service
-      service:
-        name: httpd
-        state: started
-        enabled: yes
+    - name: Set execute permission for Terraform
+      file:
+        path: "/usr/local/bin/terraform"
+        mode: "+x"
+
+    - name: Create directory for Node.js
+      file:
+        path: "/opt/nodejs"
+        state: directory
+
+    - name: Download Node.js 20.12.2
+      get_url:
+        url: "https://nodejs.org/download/release/v20.12.2/node-v20.12.2-linux-x64.tar.gz"
+        dest: "/tmp/node-v20.12.2-linux-x64.tar.gz"
+
+    - name: Extract Node.js
+      unarchive:
+        src: "/tmp/node-v20.12.2-linux-x64.tar.gz"
+        dest: "/opt/nodejs"
+        remote_src: yes
+
+    - name: Remove original Node.js file if exists
+      file:
+        path: "/usr/bin/node"
+        state: absent
+
+    - name: Create symbolic link for Node.js
+      file:
+        src: "/opt/nodejs/node-v20.12.2-linux-x64/bin/node"
+        dest: "/usr/bin/node"
+        state: link
